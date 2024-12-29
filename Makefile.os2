@@ -1,0 +1,16 @@
+CC	= gcc
+CFLAGS	= -O2 -ID:/Develope/gcc/v3.3.5/usr/include  -D_REENTRANT
+EXE	= lopan
+OBJS	= $(EXE).o gfx.o font.o
+
+$(EXE):	$(OBJS)
+	gcc -o $(EXE) $(OBJS) -lSDL -ldl -lsdl_mixer -lsdl -Zexe -lsdl_net -llibstdc++ -llibdl
+
+$(EXE).o: $(EXE).c gfx.h font.h
+
+gfx.o:	gfx.c gfx.h
+
+font.o:	font.c font.h
+
+clean:
+	rm *.o $(EXE)
