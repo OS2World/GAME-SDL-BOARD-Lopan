@@ -57,6 +57,7 @@ typedef struct surface
 
 extern unsigned char *videomem;
 extern int stride;
+extern unsigned char exitflag;
 
 void updatemap(void);
 void mapkey(int code,int qual,int *mapped);
@@ -85,3 +86,9 @@ void lightenrect(int x,int y,int sizex,int sizey);
 void transformrect(int x,int y,int sizex,int sizey,unsigned short *trans);
 void freegs(surface *gs);
 int maprgb(int r,int g,int b);
+void applyshadowplane(unsigned char *plane);
+
+
+// lopan.c
+void nomem(int code);
+

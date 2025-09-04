@@ -1,26 +1,10 @@
-#define INCL_DOS
-#include <os2.h>
-
 #include <stdlib.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <SDL.h>
 
 #include "gfx.h"
 #include "font.h"
-
-void MorphToPM();
-
-void MorphToPM() {
-   PPIB pib;
-   PTIB tib;
- 
-   DosGetInfoBlocks(&tib, &pib);
- 
-   // Change flag from VIO to PM:
-   if (pib->pib_ultype==2) pib->pib_ultype = 3;
-}
-
-
 surface tilesgs;
 
 int bgsetnumber;
@@ -161,7 +145,7 @@ int layout[]={
 
 void setfreebits(void)
 {
-int i,j,k,tc,x,y;
+int k,tc,x,y;
 unsigned char bitmap[40][40];
 struct tile *at;
 
@@ -218,7 +202,7 @@ int match(int a,int b)
 	return a>=40 && a<=43 && b>=40 && b<=43;
 }
 
-scanlayout(int *p)
+void scanlayout(int *p)
 {
 int i,j,k,h,a,b;
 int shuffle[144];
@@ -254,7 +238,7 @@ int pairs[144];
 
 	p=layout;
 	tilecount=0;
-	while(h=*p++)
+	while((h=*p++))
 	{
 		i=*p++;
 		j=*p++;
@@ -309,16 +293,16 @@ retry:
 	backed=0; // change this to 72 to have solution visible on startup...
 }
 
-clearshadowplane()
+void clearshadowplane(void)
 {
 	memset(shadowplane,0,(vxsize+7)*vysize>>3);
 }
 
-shadowdot(unsigned int x,unsigned int y,int onoff)
+void shadowdot(unsigned int x,unsigned int y,int onoff)
 {
 unsigned char *p,bit;
 	if(x>=vxsize || y>=vysize) return;
-	p=shadowplane+(x>>3)+y*(vxsize+7>>3);
+	p=shadowplane+(x>>3)+y*((vxsize+7)>>3);
 	bit=1<<(x&7);
 	if(onoff)
 		*p|=bit;
@@ -326,7 +310,7 @@ unsigned char *p,bit;
 		*p&=~bit;
 }
 
-shadowrect(int x,int y,int sizex,int sizey,int onoff)
+void shadowrect(int x,int y,int sizex,int sizey,int onoff)
 {
 int i;
 	if(y<0)
@@ -359,9 +343,9 @@ void shadowsolidrect(int x,int y,int xsize,int ysize,int rgb)
 }
 #define BORDER 0x303030
 
-doit()
+void doit(void)
 {
-int i,j,k,h,*p,h2;
+int i,j,k,h,h2;
 int x,y,flags;
 
 	copyfromback(0);
@@ -454,7 +438,7 @@ int x,y,flags;
 	applyshadowplane(shadowplane);
 }
 
-newbgset()
+void newbgset(void)
 {
 int i,j,sx,sy;
 char temp[64];
@@ -492,7 +476,7 @@ surface bgset;
 		}
 	}
 }
-newtileset()
+int newtileset(void)
 {
 char temp[64];
 int err;
@@ -552,17 +536,12 @@ int i,j,x,y;
 	return 1;
 }
 
-main()
+int main(int argc, char **argv)
 {
-
-    MorphToPM(); // Morph the VIO application to a PM one to be able to use Win* functions
-
-int i,j,k;
+int i;
 int code;
-int exitflag=0;
 unsigned char redraw;
 int backup;
-surface bgset;
 
 	bgsetnumber=tilesetnumber=-1;
 	randomize();
@@ -570,7 +549,7 @@ surface bgset;
 	atexit(closedisplay);
 	initfont();
 	tilesgs.pic=0;
-	if(newtileset())
+	if((i=newtileset()))
 	{
 		printf("Failed to load a tile set, code %d\n",i);
 		exit(2);
@@ -650,4 +629,6 @@ surface bgset;
 			backup=0;
 		}
 	}
+	return 0;
+
 }

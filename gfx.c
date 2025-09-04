@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <SDL.h>
 #include <math.h>
+#include <unistd.h>
 #include "gfx.h"
 
 #define REPT_DELAY 250
@@ -138,13 +139,13 @@ int nextcode(void)
 int code;
 	if(codeput==codetake) return -1;
 	code=codelist[codetake];
-	codetake=codetake+1&MAXCODES-1;
+	codetake=(codetake+1) & (MAXCODES-1);
 	return code;
 }
-addcode(int code)
+void addcode(int code)
 {
 int new;
-	new=codeput+1&MAXCODES-1;
+	new=(codeput+1) & (MAXCODES-1);
 	if(new==codetake) return;
 	lastcode=code;
 	codelist[codeput]=code;
@@ -152,7 +153,7 @@ int new;
 }
 void markkey(int code,int mod,int status)
 {
-int i,j;
+int i;
 int *ip;
 int mapped[2];
 
@@ -199,7 +200,6 @@ void scaninput(void)
 {
 SDL_Event event;
 int key,mod;
-static int bs=0;
 int newtime;
 
 //	mousedown=0;
@@ -250,6 +250,9 @@ int newtime;
 			mousey=event.motion.y;
 */
 			break;
+		case SDL_QUIT:
+			exitflag = 1;
+			break;
 		}
 	}
 	if(stilldown)
@@ -299,7 +302,7 @@ unsigned char r,g,b;
 		SDL_GetRGB(i,thescreen->format,&r,&g,&b);
 		darker[i]=SDL_MapRGB(thescreen->format,r*3>>2,g*3>>2,b*3>>2);
 		if(r>128 && g>128 && b>128)
-			lighter[i]=SDL_MapRGB(thescreen->format,r+255>>1,g+255>>1,b+255>>1);
+			lighter[i]=SDL_MapRGB(thescreen->format,(r+255)>>1,(g+255)>>1,(b+255)>>1);
 		else
 			lighter[i]=i;
 	}
@@ -331,7 +334,7 @@ void scrunlock(void)
 void clear(void)
 {
 int i;
-char *p;
+unsigned char *p;
 	scrlock();
 	p=videomem;
 	i=vysize;
@@ -385,9 +388,8 @@ int xs,ys;
 int i,j,k,n,t;
 int totalsize;
 int width,height;
-int x,y;
+int y;
 unsigned char *bm,*lp;
-char tname[256];
 int r,g,b;
 int numbpp;
 unsigned char map48[48];
@@ -507,7 +509,7 @@ void gstoback(int destx,int desty,surface *gs,int sourcex,int sourcey,int sizex,
 {
 unsigned short *ps;
 unsigned char *p;
-int i,j;
+int i;
 
 	if(destx>=vxsize || desty>=vysize) return;
 	if(destx<0)
@@ -533,7 +535,7 @@ int i,j;
 		i=sizex;
 		while(i--)
 			*ps++=gs->rgb[*p++];
-		((unsigned char *)ps)+=stride-sizex-sizex;
+		ps = (void *)((char *)ps + stride-sizex-sizex);
 		p+=gs->xsize-sizex;
 	}
 }
@@ -593,7 +595,7 @@ int i;
 		i=sizex;
 		while(i-->0)
 			p[i]=trans[p[i]];
-		((unsigned char *)p)+=stride;
+		p = (void *)((char *)p + stride);
 	}
 }
 void darkenrect(int x,int y,int sizex,int sizey)
@@ -630,7 +632,7 @@ int c;
 		i=sizex;
 		while(i-->0)
 			p[i]=c;
-		((unsigned char *)p)+=stride;
+		p = (void *)((char *)p + stride);
 	}
 }
 
@@ -645,7 +647,7 @@ unsigned char c;
 	{
 		i=vxsize;
 		p2=p;
-		((unsigned char *)p)+=stride;
+		p = (void *)((char *)p + stride);
 		while(i>0)
 		{
 			i-=8;

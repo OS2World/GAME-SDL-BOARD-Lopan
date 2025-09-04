@@ -1,4 +1,12 @@
 ----------------------------------------------------------------------------
+Wed Jun 25 23:18:48 EDT 2008
+Dave Ashley dashxdr@gmail.com
+
+Version is now 10
+o Fixed up all the compiler warnings, turned on -Wall
+o Use sdl-config in Makefile
+o Added Makefile.osx for building under MAC OSX
+----------------------------------------------------------------------------
 Sat Nov  6 13:09:17 PST 1999
 Dave Ashley  dash@xdr.com
 Version is now 08
